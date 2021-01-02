@@ -32,6 +32,9 @@ def setup_game():
     global imposters
 
     player_amount = get_int("Enter amount of players: ")
+    while player_amount < 3:
+        print("You need at least 3 players")
+        player_amount = get_int("Enter amount of players: ")
 
     while not len(players) == player_amount:
         player = get_string("Enter player name: ")
