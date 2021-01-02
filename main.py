@@ -25,6 +25,7 @@ def get_string(prompt):
 
 players = []
 imposters = []
+course = 100
 
 
 def setup_game():
@@ -76,12 +77,39 @@ def vote():
     return(max(votes,key=votes.count))
 
 
+def status():
+    global course
+    print("the ship is " + str(course) + " percent on course")
+
+
+def steer(captain):
+    global course
+    steered = False
+    while not steered:
+        choice = get_string(captain + ", it is time to steer the ship, in the future there will be a minigame for this but for now just type 'steer' or 'sabotage': ")
+        if choice == "steer":
+            course += 10
+            if course > 100:
+                course = 100
+            steered = True
+        elif choice == "sabotage":
+            course -= 10
+            if course < 0:
+                course = 0
+            steered = True
+        else:
+            print("Please enter 'steered' or 'sabotage'")
+
+
+
 def main():
     global players
     global imposters
     setup_game()
     captain = vote()
     print("your captain is " + captain + ", they will steer the ship")
+    steer(captain)
+    status()
 
 
 if __name__ == "__main__":
