@@ -3,6 +3,7 @@
 # Among Us Spin Off game proof of concept
 
 import sys
+import random
 
 
 def get_int(prompt):
@@ -32,9 +33,20 @@ def setup_game():
     while imposter_amount < 1 or imposter_amount >= (player_amount / 2):
         imposter_amount = get_int("Enter amount of imposters, it must be less than half of players: ")
 
+    while not len(imposters) == imposter_amount:
+        imposter = random.choice(players)
+        if not imposter in imposters:
+            imposters += imposter
+
 
 def main():
+    global players
+    global imposters
     setup_game()
+    print("players:")
+    print(players)
+    print("imposters:")
+    print(imposters)
 
 
 if __name__ == "__main__":
