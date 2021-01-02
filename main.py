@@ -16,6 +16,13 @@ def get_int(prompt):
             print("Please enter a number")
 
 
+def get_string(prompt):
+    while True:
+        value = input(prompt)
+        if value != "":
+            return str(value)
+
+
 players = []
 imposters = []
 
@@ -26,8 +33,12 @@ def setup_game():
 
     player_amount = get_int("Enter amount of players: ")
 
-    for i in range(player_amount):
-        players += str(input("Enter player name: "))
+    while not len(players) == player_amount:
+        player = get_string("Enter player name: ")
+        if player in players:
+            print ("That name is taken")
+        else:
+            players += player
 
     imposter_amount = 0
     while imposter_amount < 1 or imposter_amount >= (player_amount / 2):
