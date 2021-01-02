@@ -53,14 +53,36 @@ def setup_game():
             imposters += imposter
 
 
+def vote():
+    global players
+    global imposters
+
+    print()
+    print("vote for a captain who will steer the ship")
+    print("if there is a tie you will have to vote over and over until a captain is decided")
+    print("the candidates are:")
+    print(players)
+    print("any votes that aren't from the list of candidates will be spoiled")
+
+
+    decided_winner = False
+    while not decided_winner:
+        votes = []
+        for i in players:
+            choice = get_string(i + ", enter your vote: ")
+            if choice in players:
+                votes += choice
+            else:
+                print("that was not a candidate, your vote was not counted")
+        
+        print(votes)
+
+
 def main():
     global players
     global imposters
     setup_game()
-    print("players:")
-    print(players)
-    print("imposters:")
-    print(imposters)
+    vote()
 
 
 if __name__ == "__main__":
