@@ -73,7 +73,7 @@ def vote():
             votes.append(choice)
         else:
             print("that was not a candidate, your vote was not counted")
-        
+
     return(max(votes,key=votes.count))
 
 
@@ -101,6 +101,27 @@ def steer(captain):
         else:
             print("Please enter 'steered' or 'sabotage'")
 
+
+def redraw(height, length, heading_position, target_position, asteriod_positions):
+    for i in range(length):
+        sys.stdout.write("_")
+    print()
+    for i in range(1, height + 1):
+        for j in range(1, length + 1):
+            if [i, j] == heading_position:
+                sys.stdout.write("+")
+            elif [i, j] == target_position:
+                sys.stdout.write("o")
+            elif [i, j] in asteriod_positions:
+                sys.stdout.write("*")
+            else:
+                sys.stdout.write(".")
+        print()
+    for i in range(length):
+        sys.stdout.write("_")
+    print()
+
+
 def steering_minigame():
     print("Welcome to steering")
     print("You will need to steer your ship '+' towards your target 'o' and avoid asteroids '*'")
@@ -111,6 +132,7 @@ def steering_minigame():
     length = 10
     heading_position = [random.randint(1,height), random.randint(1,length)]
     target_position = [random.randint(1,height), random.randint(1,length)]
+    asteriod_positions = []
     for i in range(length):
         sys.stdout.write("_")
     print()
@@ -121,15 +143,16 @@ def steering_minigame():
             elif [i, j] == target_position:
                 sys.stdout.write("o")
             else:
-                if random.randint(1,3) > 1:
+                if random.randint(1,4) > 1:
                     sys.stdout.write(".")
                 else:
                     sys.stdout.write("*")
+                    asteriod_positions.append([i, j])
         print()
     for i in range(length):
         sys.stdout.write("_")
     print()
-
+    #redraw(height, length, heading_position, target_position, asteriod_positions)
 
 
 def main():
