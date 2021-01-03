@@ -56,7 +56,6 @@ def setup_game():
 
 def vote():
     global players
-    global imposters
 
     print()
     print("vote for a captain who will steer the ship")
@@ -99,20 +98,20 @@ def steer(captain):
                 course = 0
             steered = True
         else:
-            print("Please enter 'steered' or 'sabotage'")
+            print("Please enter 'steer' or 'sabotage'")
 
 
-def redraw(height, length, heading_position, target_position, asteriod_positions):
+def redraw(height, length, position, target_position, asteroid_positions):
     for i in range(length):
         sys.stdout.write("_")
     print()
     for i in range(1, height + 1):
         for j in range(1, length + 1):
-            if [i, j] == heading_position:
+            if [i, j] == position:
                 sys.stdout.write("+")
             elif [i, j] == target_position:
                 sys.stdout.write("o")
-            elif [i, j] in asteriod_positions:
+            elif [i, j] in asteroid_positions:
                 sys.stdout.write("*")
             else:
                 sys.stdout.write(".")
@@ -122,17 +121,30 @@ def redraw(height, length, heading_position, target_position, asteriod_positions
     print()
 
 
+def validate_steering_position(new_position, height, length, asteroid_positions):
+    if new_position[0] > 0 and new_position[0] <= height:
+        if new_position[1] > 0 and new_position[1] <= length:
+            if new_position not in asteroid_positions:
+                return 0
+            else:
+                return 1
+        else:
+            return 2
+    else:
+        return 2
+
+
 def steering_minigame():
     print("Welcome to steering")
     print("You will need to steer your ship '+' towards your target 'o' and avoid asteroids '*'")
-    print("Unless you're the imposter, then steer the the ship off course") 
+    print("Unless you're the imposter, then steer the the ship off course")
     print("but not too much or the crewmates will catch on")
     print("Here is the map:")
     height = 5
     length = 10
     heading_position = [random.randint(1,height), random.randint(1,length)]
     target_position = [random.randint(1,height), random.randint(1,length)]
-    asteriod_positions = []
+    asteroid_positions = []
     for i in range(length):
         sys.stdout.write("_")
     print()
@@ -147,19 +159,19 @@ def steering_minigame():
                     sys.stdout.write(".")
                 else:
                     sys.stdout.write("*")
-                    asteriod_positions.append([i, j])
+                    asteroid_positions.append([i, j])
         print()
     for i in range(length):
         sys.stdout.write("_")
     print()
-    #redraw(height, length, heading_position, target_position, asteriod_positions)
-    choice_made = False
+    choice_amount = random.randint(1,5)
     choices = ["up", "down", "right", "left", "stay"]
-    while not choice_made:
+    new_position = heading_position[:]
+    while choice_amount > 0:
+        print("You have " + str(choice_amount) + " moves remaining")
         choice = get_string("Type up, down, right, left, or stay to steer the ship: ")
         choice = choice.lower()
         if choice in choices:
-            new_position = heading_position
             if choice == "up":
                 new_position[0] -= 1
             elif choice == "down":
@@ -168,7 +180,18 @@ def steering_minigame():
                 new_position[1] += 1
             elif choice == "left":
                 new_position[1] -= 1
-            redraw(height, length, new_position, target_position, asteriod_positions)
+
+            validation = validate_steering_position(new_position, height, length, asteroid_positions)
+            if validation == 2:
+                print("Error: you cannot move off screen")
+                new_position = heading_position[:]
+            elif validation == 1:
+                print("Error: you hit an asteroid")
+                new_position = heading_position[:]
+            else:
+                heading_position = new_position[:]
+                choice_amount -= 1
+            redraw(height, length, new_position, target_position, asteroid_positions)
 
 
 
