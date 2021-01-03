@@ -51,7 +51,7 @@ def setup_game():
     while not len(imposters) == imposter_amount:
         imposter = random.choice(players)
         if not imposter in imposters:
-            imposters += imposter
+            imposters.append(imposter)
 
 
 def vote():
@@ -70,7 +70,7 @@ def vote():
     for i in players:
         choice = get_string(i + ", enter your vote: ")
         if choice in players:
-            votes += choice
+            votes.append(choice)
         else:
             print("that was not a candidate, your vote was not counted")
         
