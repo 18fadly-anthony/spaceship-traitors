@@ -42,7 +42,7 @@ def setup_game():
         if player in players:
             print ("That name is taken")
         else:
-            players += player
+            players.append(player)
 
     imposter_amount = 0
     while imposter_amount < 1 or imposter_amount >= (player_amount / 2):
