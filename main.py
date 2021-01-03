@@ -153,6 +153,23 @@ def steering_minigame():
         sys.stdout.write("_")
     print()
     #redraw(height, length, heading_position, target_position, asteriod_positions)
+    choice_made = False
+    choices = ["up", "down", "right", "left", "stay"]
+    while not choice_made:
+        choice = get_string("Type up, down, right, left, or stay to steer the ship: ")
+        choice = choice.lower()
+        if choice in choices:
+            new_position = heading_position
+            if choice == "up":
+                new_position[0] -= 1
+            elif choice == "down":
+                new_position[0] += 1
+            elif choice == "right":
+                new_position[1] += 1
+            elif choice == "left":
+                new_position[1] -= 1
+            redraw(height, length, new_position, target_position, asteriod_positions)
+
 
 
 def main():
