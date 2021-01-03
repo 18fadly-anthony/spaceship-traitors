@@ -30,6 +30,9 @@ course = 50
 distance_from_home = 50
 oxygen = 100
 day = 0
+spacesuit_maintainer = ""
+oxygen_maintainer = ""
+captain = ""
 
 
 def setup_game():
@@ -63,6 +66,7 @@ def setup_game():
 
 def vote():
     global players
+    global captain
 
     print()
     print("vote for a captain who will steer the ship")
@@ -80,7 +84,7 @@ def vote():
         else:
             print("that was not a candidate, your vote was not counted")
 
-    return(max(votes,key=votes.count))
+    captain = max(votes,key=votes.count)
 
 
 def status():
@@ -102,7 +106,8 @@ def status():
     print("We are " + str(course) + " percent on course")
 
 
-def steer(captain):
+def steer():
+    global captain
     print()
     print(captain + " it is time to steer the ship")
     global course
@@ -215,12 +220,28 @@ def steering_minigame():
     return(distance(heading_position, target_position))
 
 
+def assign_jobs():
+    global player
+    global spacesuit_maintainer
+    global oxygen_maintainer
+    global captain
+    spacesuit_maintainer = ""
+    oxygen_maintainer = ""
+    while spacesuit_maintainer == "":
+        choice = random.choice(players)
+        if choice != captain:
+            spacesuit_maintainer = choice
+    while oxygen_maintainer == "":
+        choice = random.choice(players)
+        if choice != captain and choice != spacesuit_maintainer:
+            oxygen_maintainer = choice
+
 
 def main():
     setup_game()
-    captain = vote()
-    print("your captain is " + captain + ", they will steer the ship")
-    steer(captain)
+    vote()
+    steer()
+    assign_jobs()
     status()
 
 
