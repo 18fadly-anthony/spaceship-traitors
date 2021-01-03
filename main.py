@@ -211,5 +211,5 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print('\n' + "exit")
+        print('\n' + "Exiting...")
         sys.exit(0)
