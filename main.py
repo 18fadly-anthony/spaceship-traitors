@@ -237,12 +237,23 @@ def assign_jobs():
             oxygen_maintainer = choice
 
 
+def travel():
+    global distance_from_home
+    global course
+    global oxygen
+    global day
+    distance_from_home -= (course / 10)
+    oxygen -= 10
+    day += 1
+
 def main():
     setup_game()
-    vote()
-    steer()
-    assign_jobs()
-    status()
+    while distance_from_home > 0:
+        vote()
+        steer()
+        assign_jobs()
+        travel()
+        status()
 
 
 if __name__ == "__main__":
