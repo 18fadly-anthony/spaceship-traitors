@@ -54,6 +54,9 @@ def setup_game():
         if not imposter in imposters:
             imposters.append(imposter)
 
+    for i in imposters:
+        print(i + ", you are an imposter")
+
 
 def vote():
     global players
