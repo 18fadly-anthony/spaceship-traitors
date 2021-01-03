@@ -4,6 +4,7 @@
 
 import sys
 import random
+import math
 
 
 def get_int(prompt):
@@ -25,7 +26,7 @@ def get_string(prompt):
 
 players = []
 imposters = []
-course = 100
+course = 50
 
 
 def setup_game():
@@ -83,22 +84,13 @@ def status():
 
 def steer(captain):
     print()
+    print(captain + " it is time to steer the ship")
     global course
-    steered = False
-    while not steered:
-        choice = get_string(captain + ", it is time to steer the ship, in the future there will be a minigame for this but for now just type 'steer' or 'sabotage': ")
-        if choice == "steer":
-            course += 10
-            if course > 100:
-                course = 100
-            steered = True
-        elif choice == "sabotage":
-            course -= 10
-            if course < 0:
-                course = 0
-            steered = True
-        else:
-            print("Please enter 'steer' or 'sabotage'")
+    course += (10 - steering_minigame())
+    if course > 100:
+        course = 100
+    if course < 0:
+        course = 0
 
 
 def redraw(height, length, position, target_position, asteroid_positions):
@@ -132,6 +124,14 @@ def validate_steering_position(new_position, height, length, asteroid_positions)
             return 2
     else:
         return 2
+
+
+def distance(start, end):
+    # get distance using pythagorean theroum
+    a = abs(start[0] - end[0])
+    b = abs(start[1] - end[1])
+    c = math.sqrt(math.pow(a, 2) + math.pow(b, 2))
+    return c
 
 
 def steering_minigame():
@@ -192,18 +192,16 @@ def steering_minigame():
                 heading_position = new_position[:]
                 choice_amount -= 1
             redraw(height, length, new_position, target_position, asteroid_positions)
+    return(distance(heading_position, target_position))
 
 
 
 def main():
-    global players
-    global imposters
-    #setup_game()
-    #captain = vote()
-    #print("your captain is " + captain + ", they will steer the ship")
-    #steer(captain)
-    #status()
-    steering_minigame()
+    setup_game()
+    captain = vote()
+    print("your captain is " + captain + ", they will steer the ship")
+    steer(captain)
+    status()
 
 
 if __name__ == "__main__":
