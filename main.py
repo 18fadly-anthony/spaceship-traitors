@@ -101,16 +101,46 @@ def steer(captain):
         else:
             print("Please enter 'steered' or 'sabotage'")
 
+def steering_minigame():
+    print("Welcome to steering")
+    print("You will need to steer your ship '+' towards your target 'o' and avoid asteroids '*'")
+    print("Unless you're the imposter, then steer the the ship off course") 
+    print("but not too much or the crewmates will catch on")
+    print("Here is the map:")
+    height = 5
+    length = 10
+    heading_position = [random.randint(1,height), random.randint(1,length)]
+    target_position = [random.randint(1,height), random.randint(1,length)]
+    for i in range(length):
+        sys.stdout.write("_")
+    print()
+    for i in range(1, height + 1):
+        for j in range(1, length + 1):
+            if [i, j] == heading_position:
+                sys.stdout.write("+")
+            elif [i, j] == target_position:
+                sys.stdout.write("o")
+            else:
+                if random.randint(1,3) > 1:
+                    sys.stdout.write(".")
+                else:
+                    sys.stdout.write("*")
+        print()
+    for i in range(length):
+        sys.stdout.write("_")
+    print()
+
 
 
 def main():
     global players
     global imposters
-    setup_game()
-    captain = vote()
-    print("your captain is " + captain + ", they will steer the ship")
-    steer(captain)
-    status()
+    #setup_game()
+    #captain = vote()
+    #print("your captain is " + captain + ", they will steer the ship")
+    #steer(captain)
+    #status()
+    steering_minigame()
 
 
 if __name__ == "__main__":
