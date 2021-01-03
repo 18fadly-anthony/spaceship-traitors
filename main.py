@@ -27,6 +27,9 @@ def get_string(prompt):
 players = []
 imposters = []
 course = 50
+distance_from_home = 50
+oxygen = 100
+day = 0
 
 
 def setup_game():
@@ -81,8 +84,22 @@ def vote():
 
 
 def status():
+    global players
+    global imposters
     global course
-    print("the ship is " + str(course) + " percent on course")
+    global distance_from_home
+    global oxygen
+    global day
+
+    print()
+    print("--- Status Report ---")
+    print()
+    print("It is day " + str(day))
+    print("There are " + str(len(players)) + " astronauts on deck")
+    print("There are " + str(len(imposters)) + " imposters on deck")
+    print("We are " + str(distance_from_home) + " lightyears away from home")
+    print("We have " + str(oxygen) + " units of oxygen remaining")
+    print("We are " + str(course) + " percent on course")
 
 
 def steer(captain):
