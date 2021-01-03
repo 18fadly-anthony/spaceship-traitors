@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Among Us Spin Off game proof of concept
+# Among Us Spin Off game proof of concept text adventure
 
 import sys
 import random
@@ -83,6 +83,7 @@ def status():
 
 
 def steer(captain):
+    print()
     global course
     steered = False
     while not steered:
