@@ -284,7 +284,7 @@ def maintain_spacesuits():
     elif choice == 'sabotage':
         print("You have chosen to sabotage")
         print(living_players)
-        to_die = prompt("Enter a player whose suite you want to sabotage: ", living_players)
+        to_die = prompt("Enter a player whose suit you want to sabotage: ", living_players)
 
 
 def maintain_oxygen():
