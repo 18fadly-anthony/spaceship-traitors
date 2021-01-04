@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import ReplyKeyboardMarkup
 import logging
 import sys
-import time
 
 API_KEY = str(sys.argv[1])
 
 game_state = "not running"
 players = []
 host = ""
-message_queue = []
+living_players = []
+imposter_amount = 0
+state = 0
 
 imposters = []
-living_players = []
 dead_players = []
 original_imposters = []
 course = 50
@@ -87,8 +88,7 @@ def joingame(update, context):
         update.message.reply_text('You have joined ' + host + "'s game")
         context.bot.send_message(players[0][1], new_player[0] + " has joined your game")
         print(new_player[0] + " has joined " + players[0][0] + "'s game")
-        # if len(players) > 2: # TODO You need 3 or more players for an actual game but I'm setting it to 1 or more for testing
-        if len(players) > 0:
+        if len(players) > 2:
             context.bot.send_message(players[0][1], "There are " + str(len(players)) + " players in your lobby, send /begin to start the game")
 
 
@@ -97,9 +97,11 @@ def send_to_all(context, message):
         context.bot.send_message(i[1], message)
 
 
-def setup_game(update, context):
+def setup_game(context):
+    global state
     living_players = players[:]
-    #imposter_amount = prompt_user(context, players[0][1], "Enter the amount of imposters:")
+    context.bot.send_message(players[0][1], "Set amount of imposters")
+    state = 1 # to set amount of imposters
 
 
 def begin(update, context):
@@ -108,12 +110,24 @@ def begin(update, context):
         context.bot.send_message(players[0][1], "Error: not enough players have joined")
         return
     send_to_all(context, "Starting the Game!")
-    setup_game(update, context)
+    setup_game(context)
 
 
-def add_to_message_queue(update, context):
-    global message_queue
-    message_queue.append([update.message.chat_id, update.message.text])
+
+def non_command(update, context):
+    global state
+    global imposter_amount
+    if state == 1: # set amount of imposters
+        while imposter_amount < 1: # or imposter_amount >= (len(players) / 2): # TODO
+            print(imposter_amount)
+            if update.message.chat_id == players[0][1]:
+                try:
+                    imposter_amount = int(update.message.text)
+                except ValueError:
+                    pass
+        state = 3
+        print(imposter_amount)
+
 
 
 def main():
@@ -135,7 +149,7 @@ def main():
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
-    dp.add_handler(MessageHandler(Filters.text, add_to_message_queue))
+    dp.add_handler(MessageHandler(Filters.text, non_command))
 
     # log all errors
     dp.add_error_handler(error)
