@@ -6,7 +6,7 @@ import logging
 import sys
 import random
 
-API_KEY = str(sys.argv[1])
+#API_KEY = str(sys.argv[1])
 
 game_state = "not running"
 players = []
@@ -30,6 +30,12 @@ day = 0
 spacesuit_maintainer = ""
 oxygen_maintainer = ""
 to_die = ""
+
+
+def get_item_index(array, item):
+    for i in range(len(array)):
+        if array[i] == item:
+            return i
 
 
 # Enable logging
@@ -144,6 +150,89 @@ def begin(update, context):
     setup_game(context)
 
 
+def vote(context):
+    global captain
+    global state
+    global votes
+    global voted
+
+    if state == 3:
+        votes = []
+        voted = []
+
+        send_to_all(context, "Vote for a captain who will steer the ship, enter one of the following:")
+        send_to_all(context, str(player_names))
+
+        state = 4
+    if state == 5:
+        captain = max(votes, key = votes.count)
+        send_to_all(context, "The captain is " + captain)
+        state = 6
+        steer(context)
+
+
+def steer(context):
+    global course
+    send_to_all(context, "Captain " + captain + " will now steer the ship")
+    captain_id = living_player_id_list[get_item_index(player_names, captain)]
+    course += (10 - steering_minigame(context, captain_id, False))
+    if course > 100:
+        course = 100
+    if course < 0:
+        course = 0
+
+
+def redraw(height, length, position, target_position, asteroid_positions):
+    map = ""
+    for i in range(1, height + 1):
+        for j in range(1, length + 1):
+            if [i, j] == position:
+                map += ("+")
+            elif [i, j] == target_position:
+                map += ("o")
+            elif [i, j] in asteroid_positions:
+                map += ("*")
+            else:
+                map += (".")
+        map += "\n"
+    return map
+
+
+def generate_asteroids(height, length, chance):
+    asteroid_positions = []
+    for i in range(1, height + 1):
+        for j in range(1, length + 1):
+            if random.randint(1,chance) == 1:
+                asteroid_positions.append([i, j])
+    return asteroid_positions
+
+
+def steering_minigame(context, captain_id, testing):
+    if testing:
+        def send_cap(context, captain_id, message):
+            print(message)
+    else:
+        def send_cap(context, captain_id, message):
+            context.bot.send_message(captain_id, message)
+
+    send_cap(context, captain_id, "You will need to steer your ship '+' towards your target 'o' and avoid asteroids '*'")
+    send_cap(context, captain_id, "Unless you're the imposter, then steer the the ship off course. But not too much or the crewmates will catch on")
+    send_cap(context, captain_id, "Here is the map:")
+
+    height = 5
+    length = 10
+    asteroid_chance = 4 # 1 in 4
+    heading_position = [random.randint(1,height), random.randint(1,length)]
+    target_position = [random.randint(1,height), random.randint(1,length)]
+    asteroid_positions = generate_asteroids(height, length, asteroid_chance)
+    map = redraw(height, length, heading_position, target_position, asteroid_positions)
+    if testing:
+        print(map)
+    else:
+        send_cap(context, captain_id, map)
+    choice_amount = random.randint(1, 5)
+
+
 def non_command(update, context):
     global state
     global imposter_amount
@@ -173,31 +262,12 @@ def non_command(update, context):
             return
 
 
-def vote(context):
-    global captain
-    global state
-    global votes
-    global voted
-
-    if state == 3:
-        votes = []
-        voted = []
-
-        send_to_all(context, "Vote for a captain who will steer the ship, enter one of the following:")
-        send_to_all(context, str(player_names))
-
-        state = 4
-    if state == 5:
-        captain = max(votes, key = votes.count)
-        send_to_all(context, "The captain is " + captain)
-
-
 def main():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
     # Make sure to set use_context=True to use the new context based callbacks
     # Post version 12 this will no longer be necessary
-    updater = Updater(API_KEY, use_context=True)
+    updater = Updater(sys.argv[1], use_context=True)
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
