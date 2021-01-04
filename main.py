@@ -8,6 +8,8 @@ import math
 
 players = []
 imposters = []
+living_players = []
+dead_players = []
 course = 50
 distance_from_home = 50
 oxygen = 100
@@ -35,6 +37,12 @@ def get_string(prompt):
             return str(value)
 
 
+def get_item_index(array, item):
+    for i in range(len(array)):
+        if array[i] == item:
+            return i
+
+
 def prompt(prompt, options):
     choice = ""
     while not choice in options:
@@ -45,6 +53,7 @@ def prompt(prompt, options):
 def setup_game():
     global players
     global imposters
+    global living_players
 
     player_amount = get_int("Enter amount of players: ")
     while player_amount < 3:
@@ -57,6 +66,7 @@ def setup_game():
             print ("That name is taken")
         else:
             players.append(player)
+    living_players = players[:]
 
     imposter_amount = 0
     while imposter_amount < 1 or imposter_amount >= (player_amount / 2):
@@ -72,21 +82,20 @@ def setup_game():
 
 
 def vote():
-    global players
     global captain
 
     print()
     print("vote for a captain who will steer the ship")
     print("if there is a tie, the GAME will decide on the captain")
     print("the candidates are:")
-    print(players)
+    print(living_players)
     print("any votes that aren't from the list of candidates will be spoiled")
 
 
     votes = []
-    for i in players:
+    for i in living_players:
         choice = get_string(i + ", enter your vote: ")
-        if choice in players:
+        if choice in living_players:
             votes.append(choice)
         else:
             print("that was not a candidate, your vote was not counted")
@@ -95,18 +104,12 @@ def vote():
 
 
 def status():
-    global players
-    global imposters
-    global course
-    global distance_from_home
-    global oxygen
-    global day
-
     print()
     print("--- Status Report ---")
     print()
     print("It is day " + str(day))
-    print("There are " + str(len(players)) + " astronauts on deck")
+    print("There are " + str(len(living_players)) + " astronauts on deck")
+    print(str(len(dead_players)) + " astronauts have died")
     print("There are " + str(len(imposters)) + " imposters on deck")
     print("We are " + str(distance_from_home) + " lightyears away from home")
     print("We have " + str(oxygen) + " units of oxygen remaining")
@@ -114,7 +117,6 @@ def status():
 
 
 def steer():
-    global captain
     print()
     print(captain + " it is time to steer the ship")
     global course
@@ -235,11 +237,11 @@ def assign_jobs():
     spacesuit_maintainer = ""
     oxygen_maintainer = ""
     while spacesuit_maintainer == "":
-        choice = random.choice(players)
+        choice = random.choice(living_players)
         if choice != captain:
             spacesuit_maintainer = choice
     while oxygen_maintainer == "":
-        choice = random.choice(players)
+        choice = random.choice(living_players)
         if choice != captain and choice != spacesuit_maintainer:
             oxygen_maintainer = choice
 
@@ -264,8 +266,29 @@ def maintain_spacesuits():
         to_die = ""
     elif choice == 'sabotage':
         print("You have chosen to sabotage")
-        print(players)
-        to_die = prompt("Enter a player whose suite you want to sabotage: ", players)
+        print(living_players)
+        to_die = prompt("Enter a player whose suite you want to sabotage: ", living_players)
+
+
+def kill(player):
+    global living_players
+    global dead_players
+    del living_players[get_item_index(living_players, player)]
+    dead_players.append(player)
+
+
+def spacewalk():
+    global to_die
+    print()
+    print("It's time for a spacewalk, everyone will don a spacesuit and venture outside the ship")
+    print("Except for the captain who will maintain the ship")
+    if to_die == captain:
+        to_die = ""
+    elif to_die in living_players:
+        kill(to_die)
+        print(to_die + "'s spacesuit failed!")
+        print(to_die + "has died!")
+        to_die = ""
 
 
 def main():
@@ -276,6 +299,7 @@ def main():
         assign_jobs()
         travel()
         maintain_spacesuits()
+        spacewalk()
         status()
 
 
