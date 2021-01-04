@@ -71,6 +71,16 @@ def joingame(update, context):
         update.message.reply_text('You have joined ' + host + "'s game")
         context.bot.send_message(players[0][1], new_player[0] + " has joined your game")
         print(new_player[0] + " has joined " + players[0][0] + "'s game")
+        if len(players) > 2:
+            context.bot.send_message(players[0][1], "There are " + str(len(players)) + " players in your lobby, send /begin to start the game")
+
+
+def begin(update, context):
+    if not len(players) > 2:
+        context.bot.send_message(players[0][1], "Error: not enough players have joined")
+        return
+    for i in players:
+        context.bot.send_message(i[1], "Starting the game!")
 
 
 def main():
@@ -88,6 +98,7 @@ def main():
     dp.add_handler(CommandHandler("startgame", startgame))
     dp.add_handler(CommandHandler("joingame", joingame))
     dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("begin", begin))
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
