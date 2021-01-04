@@ -4,6 +4,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import ReplyKeyboardMarkup
 import logging
 import sys
+import random
 
 API_KEY = str(sys.argv[1])
 
@@ -13,17 +14,18 @@ host = ""
 living_players = []
 imposter_amount = 0
 state = 0
-
 imposters = []
+living_imposters = []
+captain = ""
+captain = ""
+
 dead_players = []
-original_imposters = []
 course = 50
 distance_from_home = 50
 oxygen = 100
 day = 0
 spacesuit_maintainer = ""
 oxygen_maintainer = ""
-captain = ""
 to_die = ""
 
 
@@ -39,11 +41,11 @@ logger = logging.getLogger(__name__)
 def start(update, context):
     """Send a message when the command /start is issued."""
     if game_state == "not running":
-        update.message.reply_text('A game is not running, send /startgame to start one') # TODO make /startgame
+        update.message.reply_text('A game is not running, send /startgame to start one')
     elif game_state == "running":
         update.message.reply_text('The game has already started, please wait until it is over')
     elif game_state == "lobby":
-        update.message.reply_text('A lobby is open, send /joingame to join it') # TODO make /joingame
+        update.message.reply_text('A lobby is open, send /joingame to join it')
 
 
 def help(update, context):
@@ -99,14 +101,26 @@ def send_to_all(context, message):
 
 def setup_game(context):
     global state
-    living_players = players[:]
-    context.bot.send_message(players[0][1], "Set amount of imposters")
-    state = 1 # to set amount of imposters
+    global living_players
+    if state == 0:
+        living_players = players[:]
+        context.bot.send_message(players[0][1], "Set amount of imposters")
+        state = 1 # to set amount of imposters
+    elif state == 2: # set imposters
+        while not len(imposters) == imposter_amount:
+            new_imposter = random.choice(players)
+            if not new_imposter in imposters:
+                imposters.append(new_imposter)
+        living_imposters = imposters[:]
+
+        # inform the imposters
+        for i in imposters:
+            context.bot.send_message(i[1], i[0] + " you are an imposter")
 
 
 def begin(update, context):
     #if not len(players) > 2: # TODO You need 3 or more players for an actual game but I'm setting it to 1 or more for testing
-    if not len(players) > 0:
+    if not len(players) > 1:
         context.bot.send_message(players[0][1], "Error: not enough players have joined")
         return
     send_to_all(context, "Starting the Game!")
@@ -118,16 +132,14 @@ def non_command(update, context):
     global state
     global imposter_amount
     if state == 1: # set amount of imposters
-        while imposter_amount < 1: # or imposter_amount >= (len(players) / 2): # TODO
-            print(imposter_amount)
+        while imposter_amount < 1: # or imposter_amount >= (len(players) / 2): # TODO, uncomment this when no longer testing
             if update.message.chat_id == players[0][1]:
                 try:
                     imposter_amount = int(update.message.text)
                 except ValueError:
                     pass
-        state = 3
-        print(imposter_amount)
-
+        state = 2
+        setup_game(context)
 
 
 def main():
