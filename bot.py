@@ -17,7 +17,9 @@ state = 0
 imposters = []
 living_imposters = []
 captain = ""
-captain = ""
+votes = []
+voted = []
+living_player_id_list = []
 
 dead_players = []
 course = 50
@@ -98,12 +100,19 @@ def send_to_all(context, message):
     for i in players:
         context.bot.send_message(i[1], message)
 
+def update_player_ids():
+    global living_player_id_list
+    living_player_id_list = []
+    for i in range(len(living_players)):
+        living_player_id_list.append(living_players[i][1])
+
 
 def setup_game(context):
     global state
     global living_players
     if state == 0:
         living_players = players[:]
+        update_player_ids()
         context.bot.send_message(players[0][1], "Set amount of imposters")
         state = 1 # to set amount of imposters
     elif state == 2: # set imposters
@@ -117,6 +126,10 @@ def setup_game(context):
         for i in imposters:
             context.bot.send_message(i[1], i[0] + " you are an imposter")
 
+        state = 3
+        #print("would run vote() here") # TODO remove this
+        vote(context)
+
 
 def begin(update, context):
     #if not len(players) > 2: # TODO You need 3 or more players for an actual game but I'm setting it to 1 or more for testing
@@ -127,10 +140,12 @@ def begin(update, context):
     setup_game(context)
 
 
-
 def non_command(update, context):
     global state
     global imposter_amount
+    global votes
+    global voted
+    
     if state == 1: # set amount of imposters
         while imposter_amount < 1: # or imposter_amount >= (len(players) / 2): # TODO, uncomment this when no longer testing
             if update.message.chat_id == players[0][1]:
@@ -141,6 +156,32 @@ def non_command(update, context):
         state = 2
         setup_game(context)
 
+    if state == 4: # getting votes
+        if update.message.chat_id in living_player_id_list:
+            if update.message.chat_id not in voted:
+                voted.append(update.message.chat_id)
+                votes.append(update.message.text)
+        if len(votes) == len(living_players):
+            state = 5
+            vote(context)
+
+
+def vote(context):
+    global captain
+    global state
+    global votes
+    global voted
+
+    if state == 3:
+        votes = []
+        voted = []
+
+        send_to_all(context, "Vote for a captain who will steer the ship, enter one of the following:")
+        send_to_all(context, str(living_players))
+
+        state = 4
+    if state == 5:
+        print(votes)
 
 def main():
     """Start the bot."""
