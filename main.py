@@ -10,6 +10,7 @@ players = []
 imposters = []
 living_players = []
 dead_players = []
+original_imposters = []
 course = 50
 distance_from_home = 50
 oxygen = 100
@@ -54,6 +55,7 @@ def setup_game():
     global players
     global imposters
     global living_players
+    global original_imposters
 
     player_amount = get_int("Enter amount of players: ")
     while player_amount < 3:
@@ -76,6 +78,7 @@ def setup_game():
         imposter = random.choice(players)
         if not imposter in imposters:
             imposters.append(imposter)
+    original_imposters = imposters[:]
 
     for i in imposters:
         print(i + ", you are an imposter")
@@ -114,6 +117,21 @@ def status():
     print("We are " + str(distance_from_home) + " lightyears away from home")
     print("We have " + str(oxygen) + " units of oxygen remaining")
     print("We are " + str(course) + " percent on course")
+
+    if distance_from_home < 1:
+        print("You made it home!")
+        win()
+    elif len(imposters) < 1:
+        print("All imposters have been killed!")
+        win()
+    elif oxygen < 1:
+        print("You are out of oxygen!")
+        lose()
+    elif len(imposters) >= (len(living_players) / 2):
+        print("Imposters outnumber you!")
+        lose()
+
+    input("Press enter to continue ")
 
 
 def steer():
@@ -258,6 +276,7 @@ def travel():
 
 def maintain_spacesuits():
     global to_die
+    print()
     print(spacesuit_maintainer + ", you are the spacesuit maintainer")
     print("You may choose to maintain the spacesuits or to sabotage one of them")
     choice = prompt("Type 'maintain' or 'sabotage': ", ['maintain', 'sabotage'])
@@ -270,10 +289,26 @@ def maintain_spacesuits():
         to_die = prompt("Enter a player whose suite you want to sabotage: ", living_players)
 
 
+def maintain_oxygen():
+    global oxygen
+    print()
+    print(oxygen_maintainer + ", you are the oxygen maintainer")
+    print("You may choose to maintain the oxygen or sabotage it by leaking it")
+    choice = prompt("Type 'maintain' or 'sabotage': ", ['maintain', 'sabotage'])
+    if choice == 'maintain':
+        print("You have chosen to maintain the oxygen")
+        oxygen += 5
+    elif choice == 'sabotage':
+        print("You have chosen to sabotage")
+        oxygen -= 10
+
+
 def kill(player):
     global living_players
     global dead_players
     del living_players[get_item_index(living_players, player)]
+    if player in imposters:
+        del imposters[get_item_index(imposters, player)]
     dead_players.append(player)
 
 
@@ -287,19 +322,33 @@ def spacewalk():
     elif to_die in living_players:
         kill(to_die)
         print(to_die + "'s spacesuit failed!")
-        print(to_die + "has died!")
+        print(to_die + " has died!")
         to_die = ""
 
 
+def win():
+    print("Crewmates Win!")
+    print("The imposter(s) were:")
+    print(original_imposters)
+    sys.exit(0)
+
+
+def lose():
+    print("Game Over! the imposter(s) won!")
+    print("The imposter(s) were:")
+    print(original_imposters)
+    sys.exit(0)
+
 def main():
     setup_game()
-    while distance_from_home > 0:
+    while True:
         vote()
         steer()
         assign_jobs()
-        travel()
         maintain_spacesuits()
+        maintain_oxygen()
         spacewalk()
+        travel()
         status()
 
 
