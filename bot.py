@@ -20,6 +20,7 @@ captain = ""
 votes = []
 voted = []
 living_player_id_list = []
+player_names = []
 
 dead_players = []
 course = 50
@@ -102,9 +103,12 @@ def send_to_all(context, message):
 
 def update_player_ids():
     global living_player_id_list
+    global player_names
     living_player_id_list = []
+    player_names = []
     for i in range(len(living_players)):
         living_player_id_list.append(living_players[i][1])
+        player_names.append(living_players[i][0])
 
 
 def setup_game(context):
@@ -177,7 +181,7 @@ def vote(context):
         voted = []
 
         send_to_all(context, "Vote for a captain who will steer the ship, enter one of the following:")
-        send_to_all(context, str(living_players))
+        send_to_all(context, str(player_names))
 
         state = 4
     if state == 5:
