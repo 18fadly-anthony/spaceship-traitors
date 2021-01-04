@@ -131,8 +131,6 @@ def status():
         print("Imposters outnumber you!")
         lose()
 
-    input("Press enter to continue ")
-
 
 def steer():
     print()
@@ -344,14 +342,26 @@ def lose():
 def main():
     setup_game()
     while True:
+        print("----------------------------------------------------------------")
         vote()
+        input("Press enter to continue ")
+        print("----------------------------------------------------------------")
         steer()
         assign_jobs()
+        input("Press enter to continue ")
+        print("----------------------------------------------------------------")
         maintain_spacesuits()
+        input("Press enter to continue ")
+        print("----------------------------------------------------------------")
         maintain_oxygen()
+        input("Press enter to continue ")
+        print("----------------------------------------------------------------")
         spacewalk()
+        input("Press enter to continue ")
+        print("----------------------------------------------------------------")
         travel()
         status()
+        input("Press enter to continue ")
 
 
 if __name__ == "__main__":
