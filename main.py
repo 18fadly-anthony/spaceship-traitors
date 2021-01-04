@@ -306,6 +306,7 @@ def maintain_oxygen():
 def kill(player):
     global living_players
     global dead_players
+    global imposters
     del living_players[get_item_index(living_players, player)]
     if player in imposters:
         del imposters[get_item_index(imposters, player)]
