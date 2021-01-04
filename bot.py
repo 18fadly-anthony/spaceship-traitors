@@ -3,12 +3,28 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
 import sys
+import time
 
 API_KEY = str(sys.argv[1])
 
 game_state = "not running"
 players = []
 host = ""
+message_queue = []
+
+imposters = []
+living_players = []
+dead_players = []
+original_imposters = []
+course = 50
+distance_from_home = 50
+oxygen = 100
+day = 0
+spacesuit_maintainer = ""
+oxygen_maintainer = ""
+captain = ""
+to_die = ""
+
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -71,16 +87,33 @@ def joingame(update, context):
         update.message.reply_text('You have joined ' + host + "'s game")
         context.bot.send_message(players[0][1], new_player[0] + " has joined your game")
         print(new_player[0] + " has joined " + players[0][0] + "'s game")
-        if len(players) > 2:
+        # if len(players) > 2: # TODO You need 3 or more players for an actual game but I'm setting it to 1 or more for testing
+        if len(players) > 0:
             context.bot.send_message(players[0][1], "There are " + str(len(players)) + " players in your lobby, send /begin to start the game")
 
 
+def send_to_all(context, message):
+    for i in players:
+        context.bot.send_message(i[1], message)
+
+
+def setup_game(update, context):
+    living_players = players[:]
+    #imposter_amount = prompt_user(context, players[0][1], "Enter the amount of imposters:")
+
+
 def begin(update, context):
-    if not len(players) > 2:
+    #if not len(players) > 2: # TODO You need 3 or more players for an actual game but I'm setting it to 1 or more for testing
+    if not len(players) > 0:
         context.bot.send_message(players[0][1], "Error: not enough players have joined")
         return
-    for i in players:
-        context.bot.send_message(i[1], "Starting the game!")
+    send_to_all(context, "Starting the Game!")
+    setup_game(update, context)
+
+
+def add_to_message_queue(update, context):
+    global message_queue
+    message_queue.append([update.message.chat_id, update.message.text])
 
 
 def main():
@@ -102,6 +135,7 @@ def main():
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
+    dp.add_handler(MessageHandler(Filters.text, add_to_message_queue))
 
     # log all errors
     dp.add_error_handler(error)
