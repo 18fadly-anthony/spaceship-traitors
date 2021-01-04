@@ -5,6 +5,7 @@ from telegram import ReplyKeyboardMarkup
 import logging
 import sys
 import random
+import math
 
 #API_KEY = str(sys.argv[1])
 
@@ -17,13 +18,24 @@ state = 0
 imposters = []
 living_imposters = []
 captain = ""
+captain_id = ""
 votes = []
 voted = []
 living_player_id_list = []
 player_names = []
+choices = ["up", "down", "right", "left", "stay"]
+choice = ""
+course = 50
+
+height = 3
+length = 5
+asteroid_chance = 4 # 1 in 4
+heading_position = [random.randint(1,height), random.randint(1,length)]
+target_position = [random.randint(1,height), random.randint(1,length)]
+asteroid_positions = []
+
 
 dead_players = []
-course = 50
 distance_from_home = 50
 oxygen = 100
 day = 0
@@ -173,13 +185,10 @@ def vote(context):
 
 def steer(context):
     global course
+    global captain_id
     send_to_all(context, "Captain " + captain + " will now steer the ship")
     captain_id = living_player_id_list[get_item_index(player_names, captain)]
-    course += (10 - steering_minigame(context, captain_id, False))
-    if course > 100:
-        course = 100
-    if course < 0:
-        course = 0
+    steering_minigame(context, False)
 
 
 def redraw(height, length, position, target_position, asteroid_positions):
@@ -207,30 +216,89 @@ def generate_asteroids(height, length, chance):
     return asteroid_positions
 
 
-def steering_minigame(context, captain_id, testing):
-    if testing:
-        def send_cap(context, captain_id, message):
-            print(message)
+def distance(start, end):
+    # get distance using pythagorean theroum
+    a = abs(start[0] - end[0])
+    b = abs(start[1] - end[1])
+    c = math.sqrt(math.pow(a, 2) + math.pow(b, 2))
+    return c
+
+
+def validate_steering_position(new_position, height, length, asteroid_positions):
+    if new_position[0] > 0 and new_position[0] <= height:
+        if new_position[1] > 0 and new_position[1] <= length:
+            if new_position not in asteroid_positions:
+                return 0
+            else:
+                return 1
+        else:
+            return 2
     else:
-        def send_cap(context, captain_id, message):
+        return 2
+
+
+def steering_minigame(context, testing):
+    global state
+    global course
+    global choice
+    global choices
+    global height
+    global length
+    global asteroid_chance
+    global heading_position
+    global target_position
+    global asteroid_positions
+
+    if testing:
+        def send_cap(context, message):
+            print(message)
+        state = 6
+    else:
+        def send_cap(context, message):
             context.bot.send_message(captain_id, message)
 
-    send_cap(context, captain_id, "You will need to steer your ship '+' towards your target 'o' and avoid asteroids '*'")
-    send_cap(context, captain_id, "Unless you're the imposter, then steer the the ship off course. But not too much or the crewmates will catch on")
-    send_cap(context, captain_id, "Here is the map:")
+    if state == 6:
+        send_cap(context, "You will need to steer your ship '+' towards your target 'o' and avoid asteroids '*'")
+        send_cap(context, "Unless you're the imposter, then steer the the ship off course. But not too much or the crewmates will catch on")
+        send_cap(context, "If you can't see the target, the ship is already on top of it")
+        send_cap(context, "Here is the map:")
 
-    height = 5
-    length = 10
-    asteroid_chance = 4 # 1 in 4
-    heading_position = [random.randint(1,height), random.randint(1,length)]
-    target_position = [random.randint(1,height), random.randint(1,length)]
-    asteroid_positions = generate_asteroids(height, length, asteroid_chance)
-    map = redraw(height, length, heading_position, target_position, asteroid_positions)
-    if testing:
-        print(map)
-    else:
-        send_cap(context, captain_id, map)
-    choice_amount = random.randint(1, 5)
+        asteroid_positions = generate_asteroids(height, length, asteroid_chance)
+        map = redraw(height, length, heading_position, target_position, asteroid_positions)
+        send_cap(context, map)
+        send_cap(context, "Send 'up', 'down', 'left', 'right', or 'stay' to steer the ship")
+        if testing:
+            choice = input()
+            state =  8
+        else:
+            state = 7
+    if state == 8:
+        new_position = heading_position[:]
+        if choice == "up":
+            new_position[0] -= 1
+        elif choice == "down":
+            new_position[0] += 1
+        elif choice == "right":
+            new_position[1] += 1
+        elif choice == "left":
+            new_position[1] -= 1
+
+        validation = validate_steering_position(new_position, height, length, asteroid_positions)
+        if validation == 2:
+            send_cap(context, "Error: you cannot move off screen")
+            new_position = heading_position[:]
+        elif validation == 1:
+            send_cap(context, "Error: you hit an asteroid")
+            new_position = heading_position[:]
+        else:
+            heading_position = new_position[:]
+        send_cap(context, redraw(height, length, heading_position, target_position, asteroid_positions))
+        course += distance(heading_position, target_position)
+        if course > 100:
+            course = 100
+            if course < 0:
+                course = 0
+        send_to_all(context, "The ship has been steered")
 
 
 def non_command(update, context):
@@ -238,6 +306,9 @@ def non_command(update, context):
     global imposter_amount
     global votes
     global voted
+    global choice
+
+    print("received message " + update.message.text)
 
     if state == 1: # set amount of imposters
         while imposter_amount < 1: # or imposter_amount >= (len(players) / 2): # TODO, uncomment this when no longer testing
@@ -260,6 +331,14 @@ def non_command(update, context):
             state = 5
             vote(context)
             return
+    if state == 7:
+        if update.message.chat_id == captain_id:
+            if update.message.text.lower() in choices:
+                choice = update.message.text.lower()
+                state = 8
+                steering_minigame(context, False)
+                return
+
 
 
 def main():
