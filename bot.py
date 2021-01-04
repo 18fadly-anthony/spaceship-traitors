@@ -57,7 +57,7 @@ def startgame(update, context):
         game_state = "lobby"
         host = update.message.from_user.first_name
         print(host + " is starting a game")
-        players.append(host)
+        players.append([host, update.message.chat_id])
         update.message.reply_text('Starting a game... you are the host, ' + host)
         update.message.reply_text('Waiting for players...')
     else:
@@ -66,8 +66,11 @@ def startgame(update, context):
 
 def joingame(update, context):
     if game_state == "lobby":
-        players.append(update.message.from_user.first_name)
+        new_player = [update.message.from_user.first_name, update.message.chat_id]
+        players.append(new_player)
         update.message.reply_text('You have joined ' + host + "'s game")
+        context.bot.send_message(players[0][1], new_player[0] + " has joined your game")
+        print(new_player[0] + " has joined " + players[0][0] + "'s game")
 
 
 def main():
