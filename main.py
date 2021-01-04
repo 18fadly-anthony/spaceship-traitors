@@ -339,6 +339,7 @@ def lose():
     print(original_imposters)
     sys.exit(0)
 
+
 def main():
     setup_game()
     while True:
