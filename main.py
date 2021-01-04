@@ -6,6 +6,17 @@ import sys
 import random
 import math
 
+players = []
+imposters = []
+course = 50
+distance_from_home = 50
+oxygen = 100
+day = 0
+spacesuit_maintainer = ""
+oxygen_maintainer = ""
+captain = ""
+to_die = ""
+
 
 def get_int(prompt):
     while True:
@@ -24,15 +35,11 @@ def get_string(prompt):
             return str(value)
 
 
-players = []
-imposters = []
-course = 50
-distance_from_home = 50
-oxygen = 100
-day = 0
-spacesuit_maintainer = ""
-oxygen_maintainer = ""
-captain = ""
+def prompt(prompt, options):
+    choice = ""
+    while not choice in options:
+        choice = get_string(prompt).lower()
+    return choice
 
 
 def setup_game():
@@ -246,6 +253,21 @@ def travel():
     oxygen -= 10
     day += 1
 
+
+def maintain_spacesuits():
+    global to_die
+    print(spacesuit_maintainer + ", you are the spacesuit maintainer")
+    print("You may choose to maintain the spacesuits or to sabotage one of them")
+    choice = prompt("Type 'maintain' or 'sabotage': ", ['maintain', 'sabotage'])
+    if choice == 'maintain':
+        print("You have chosen to maintain the spacesuits")
+        to_die = ""
+    elif choice == 'sabotage':
+        print("You have chosen to sabotage")
+        print(players)
+        to_die = prompt("Enter a player whose suite you want to sabotage: ", players)
+
+
 def main():
     setup_game()
     while distance_from_home > 0:
@@ -253,6 +275,7 @@ def main():
         steer()
         assign_jobs()
         travel()
+        maintain_spacesuits()
         status()
 
 
