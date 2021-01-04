@@ -149,7 +149,7 @@ def non_command(update, context):
     global imposter_amount
     global votes
     global voted
-    
+
     if state == 1: # set amount of imposters
         while imposter_amount < 1: # or imposter_amount >= (len(players) / 2): # TODO, uncomment this when no longer testing
             if update.message.chat_id == players[0][1]:
@@ -159,15 +159,18 @@ def non_command(update, context):
                     pass
         state = 2
         setup_game(context)
+        return
 
     if state == 4: # getting votes
         if update.message.chat_id in living_player_id_list:
             if update.message.chat_id not in voted:
                 voted.append(update.message.chat_id)
-                votes.append(update.message.text)
-        if len(votes) == len(living_players):
+                if update.message.text in player_names:
+                    votes.append(update.message.text)
+        if len(voted) == len(living_players):
             state = 5
             vote(context)
+            return
 
 
 def vote(context):
@@ -185,7 +188,9 @@ def vote(context):
 
         state = 4
     if state == 5:
-        print(votes)
+        captain = max(votes, key = votes.count)
+        send_to_all(context, "The captain is " + captain)
+
 
 def main():
     """Start the bot."""
