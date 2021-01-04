@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Among Us Spin Off game proof of concept text adventure
+# text-based Among Us spin off game
 
 import sys
 import random
