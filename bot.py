@@ -176,7 +176,9 @@ def vote(context):
         voted = []
 
         send_to_all(context, "Vote for a captain who will steer the ship, enter one of the following:")
-        send_to_all(context, str(living_player_names))
+        randomized_players = living_player_names[:]
+        random.shuffle(randomized_players)
+        send_to_all(context, str(randomized_players))
 
         state = 4
     if state == 5:
@@ -203,9 +205,9 @@ def redraw(height, length, position, target_position, asteroid_positions):
             elif [i, j] == target_position:
                 map += ("o")
             elif [i, j] in asteroid_positions:
-                map += ("*")
+                map += ("x")
             else:
-                map += (".")
+                map += ("~")
         map += "\n"
     return map
 
@@ -261,7 +263,7 @@ def steering_minigame(context, testing):
             context.bot.send_message(captain_id, message)
 
     if state == 6:
-        msg = "You will need to steer your ship '+' towards your target 'o' and avoid asteroids '*' \n \n Unless you're the imposter, then steer the the ship off course. But not too much or the crewmates will catch on \n If you can't see the target, the ship is already on top of it"
+        msg = "You will need to steer your ship '+' towards your target 'o' and avoid asteroids 'x' \n \n Unless you're the imposter, then steer the the ship off course. But not too much or the crewmates will catch on \n If you can't see the target, the ship is already on top of it"
         send_cap(context, msg)
         send_cap(context, "Here is the map:")
 
@@ -332,7 +334,7 @@ def maintain_spacesuits(context):
     global state
 
     if state == 10:
-        context.bot.send_message(spacesuit_maintainer,"You are the spacesuit maintainer, you may choose to maintain or sabotage the spacesuits. Type 'maintain' or 'sabotage'")
+        context.bot.send_message(spacesuit_maintainer,"You are the spacesuit maintainer, you may choose to maintain the spacesuits or sabotage a specific spacesuit causing that player to die. Type 'maintain' or 'sabotage'")
         state = 11
 
 
