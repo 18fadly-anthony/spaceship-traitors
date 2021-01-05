@@ -32,6 +32,8 @@ to_die = ""
 oxygen = 50
 imposter_names = []
 dead_players = []
+distance_from_home = 50
+day = 0
 
 height = 3
 length = 5
@@ -39,10 +41,6 @@ asteroid_chance = 4 # 1 in 4
 heading_position = [random.randint(1,height), random.randint(1,length)]
 target_position = [random.randint(1,height), random.randint(1,length)]
 asteroid_positions = []
-
-
-distance_from_home = 50
-day = 0
 
 
 def get_item_index(array, item):
@@ -362,6 +360,79 @@ def spacewalk(context):
             send_to_all(context, to_die + "'s spacesuit failed!")
             send_to_all(context, to_die + " has died!")
             to_die = ""
+        state = 16
+        travel(context)
+
+
+def travel(context):
+    global state
+    global distance_from_home
+    global oxygen
+    global day
+
+    if state == 16:
+        distance_from_home -= (course / 10)
+        oxygen -= 10
+        day += 1
+        state = 17
+        status(context)
+
+
+def status(context):
+    global state
+
+    if state == 17:
+        status_msg = ""
+
+        status_msg += "--- STATUS REPORT --- \n\n"
+        status_msg += ("It is day " + str(day))
+        status_msg += ("There are " + str(len(living_players)) + " astronauts on deck")
+        status_msg += (str(len(dead_players)) + " astronauts have died")
+        status_msg +=("There are " + str(len(imposters)) + " imposters on deck")
+        status_msg += ("We are " + str(distance_from_home) + " lightyears away from home")
+        status_msg += ("We have " + str(oxygen) + " units of oxygen remaining")
+        status_msg += ("We are " + str(course) + " percent on course")
+
+        send_to_all(context, status_msg)
+
+        if distance_from_home < 1:
+            send_to_all(context, "You made it home!")
+            state = 18
+            win(context)
+        elif len(living_imposters) < 1:
+            send_to_all(context, "All imposters have been killed!")
+            state = 18
+            win(context)
+        elif oxygen < 1:
+            send_to_all(context, "You are out of oxygen!")
+            state = 19
+            lose(context)
+        elif len(living_imposters) >= (len(living_players) / 2):
+            send_to_all(context, "Imposters outnumber crewmates!")
+            state = 19
+            lose()
+        else:
+            state = 3
+            vote(context)
+
+
+def win(context):
+    global state
+    global game_state
+
+    if state == 18:
+        send_to_all(context, "Crewmates Win! \n The imposter(s) were: \n" + str(imposters))
+        state = 0
+        game_state = "not_running"
+
+
+def lose(context):
+    global state
+    global game_state
+    if state == 19:
+        send_to_all(context, "Game Over! The imposter(s) won! The imposter(s) were: \n" + str(imposters))
+        state = 0
+        game_state = "not_running"
 
 
 def non_command(update, context):
