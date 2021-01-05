@@ -490,7 +490,7 @@ def non_command(update, context):
                 return
             elif update.message.text.lower() == "sabotage":
                 context.bot.send_message(spacesuit_maintainer,"Enter the player whose suit you want to sabotage")
-                context.bot.send_message(spacesuit_maintainer, player_names)
+                context.bot.send_message(spacesuit_maintainer, living_player_names)
                 state = 12
                 return
     elif state == 12:
