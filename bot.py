@@ -29,6 +29,9 @@ course = 50
 spacesuit_maintainer = ""
 oxygen_maintainer = ""
 to_die = ""
+oxygen = 50
+imposter_names = []
+dead_players = []
 
 height = 3
 length = 5
@@ -38,9 +41,7 @@ target_position = [random.randint(1,height), random.randint(1,length)]
 asteroid_positions = []
 
 
-dead_players = []
 distance_from_home = 50
-oxygen = 100
 day = 0
 
 
@@ -122,11 +123,16 @@ def send_to_all(context, message):
 def update_player_ids():
     global living_player_id_list
     global player_names
+    global living_imposters
+    global imposter_names
     living_player_id_list = []
     player_names = []
     for i in range(len(living_players)):
         living_player_id_list.append(living_players[i][1])
         player_names.append(living_players[i][0])
+        if living_players[i][1] in imposters:
+            living_imposters.append(living_players[i][1])
+            imposter_names.append(living_players[i][0])
 
 
 def setup_game(context):
@@ -149,13 +155,11 @@ def setup_game(context):
             context.bot.send_message(i[1], i[0] + " you are an imposter")
 
         state = 3
-        #print("would run vote() here") # TODO remove this
         vote(context)
 
 
 def begin(update, context):
-    #if not len(players) > 2: # TODO You need 3 or more players for an actual game but I'm setting it to 1 or more for testing
-    if not len(players) > 1:
+    if not len(players) > 2:
         context.bot.send_message(players[0][1], "Error: not enough players have joined")
         return
     send_to_all(context, "Starting the Game!")
@@ -313,11 +317,11 @@ def assign_jobs(context):
         oxygen_maintainer = ""
         while spacesuit_maintainer == "":
             new = random.choice(living_player_id_list)
-            if choice != captain_id:
+            if new != captain_id:
                 spacesuit_maintainer = new
         while oxygen_maintainer == "":
             new = random.choice(living_player_id_list)
-            if choice != captain and choice != spacesuit_maintainer:
+            if new != captain_id and new != spacesuit_maintainer:
                 oxygen_maintainer = new
         state = 10
         maintain_spacesuits(context)
@@ -331,6 +335,35 @@ def maintain_spacesuits(context):
         context.bot.send_message(spacesuit_maintainer,"You are the spacesuit maintainer, you may choose to maintain or sabotage the spacesuits. Type 'maintain' or 'sabotage'")
         state = 11
 
+
+def maintain_oxygen(context):
+    global state
+
+    if state == 13:
+        context.bot.send_message(oxygen_maintainer, "You are the oxygen maintainer, you man choose to maintain the oxygen or sabotage it by leaking it. Type 'maintain' or 'sabotage'")
+        state = 14
+
+
+def spacewalk(context):
+    global state
+    global to_die
+    global living_players
+    global dead_players
+    global living_imposters
+
+    if state == 15:
+        send_to_all(context, "It's time for a spacewalk, everyone will don a spacesuit and venture outside the ship, except for the captain who will maintain the ship")
+        if to_die == captain:
+            to_die = ""
+        elif to_die in player_names:
+            del living_players[get_item_index(player_names, to_die)]
+            dead_players.append(to_die)
+            update_player_ids()
+            send_to_all(context, to_die + "'s spacesuit failed!")
+            send_to_all(context, to_die + " has died!")
+            to_die = ""
+
+
 def non_command(update, context):
     global state
     global imposter_amount
@@ -338,11 +371,12 @@ def non_command(update, context):
     global voted
     global choice
     global to_die
+    global oxygen
 
     print("received message " + update.message.text)
 
     if state == 1: # set amount of imposters
-        while imposter_amount < 1: # or imposter_amount >= (len(players) / 2): # TODO, uncomment this when no longer testing
+        while imposter_amount < 1 or imposter_amount >= (len(players) / 2):
             if update.message.chat_id == players[0][1]:
                 try:
                     imposter_amount = int(update.message.text)
@@ -373,54 +407,45 @@ def non_command(update, context):
         if update.message.chat_id == spacesuit_maintainer:
             if update.message.text.lower() == "maintain":
                 context.bot.send_message(spacesuit_maintainer,"You have chosen to maintain the spacesuits")
-                state = 12
-                # TODO next function here
+                state = 13
+                maintain_oxygen(context)
                 return
             elif update.message.text.lower() == "sabotage":
                 context.bot.send_message(spacesuit_maintainer,"Enter the player whose suit you want to sabotage")
                 context.bot.send_message(spacesuit_maintainer, player_names)
-                state = 13
+                state = 12
                 return
-    elif state == 13:
+    elif state == 12:
         if update.message.chat_id == spacesuit_maintainer:
             if update.message.text in player_names:
                 to_die = update.message.text
                 print(to_die)
-                state = 12
-                # TODO next function here
+                state = 13
+                maintain_oxygen(context)
                 return
+    elif state == 14:
+        if update.message.chat_id == oxygen_maintainer:
+            if update.message.text.lower() == "maintain":
+                context.bot.send_message(oxygen_maintainer, "You have chosen to maintain the oxygen")
+                oxygen += 5
+            elif update.message.text.lower() == "sabotage":
+                context.bot.send_message(oxygen_maintainer, "You have chosen to sabotage the oxygen")
+                oxygen -= 10
+            state = 15
+            spacewalk(context)
 
 
 def main():
-    """Start the bot."""
-    # Create the Updater and pass it your bot's token.
-    # Make sure to set use_context=True to use the new context based callbacks
-    # Post version 12 this will no longer be necessary
     updater = Updater(sys.argv[1], use_context=True)
-
-    # Get the dispatcher to register handlers
     dp = updater.dispatcher
-
-    # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("startgame", startgame))
     dp.add_handler(CommandHandler("joingame", joingame))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("begin", begin))
-
-    # on noncommand i.e message - echo the message on Telegram
-    # dp.add_handler(MessageHandler(Filters.text, echo))
     dp.add_handler(MessageHandler(Filters.text, non_command))
-
-    # log all errors
     dp.add_error_handler(error)
-
-    # Start the Bot
     updater.start_polling()
-
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
 
 
