@@ -125,6 +125,11 @@ def joingame(update, context):
 
 
 def send_to_all(context, message):
+    for i in living_player_ids:
+        context.bot.send_message(i, message)
+
+
+def send_to_all_inc(context, message):
     for i in player_ids:
         context.bot.send_message(i, message)
 
@@ -158,6 +163,8 @@ def setup_game(context):
 
 
 def begin(update, context):
+    global game_state
+    game_state = "running"
     if not len(player_ids) > 2:
         context.bot.send_message(player_ids[0], "Error: not enough players have joined")
         return
@@ -364,8 +371,8 @@ def spacewalk(context):
             dead_player_names.append(to_die)
             if to_die in living_imposter_names:
                 del living_imposter_names[get_item_index(living_imposter_names, to_die)]
-            send_to_all(context, to_die + "'s spacesuit failed!")
-            send_to_all(context, to_die + " has died!")
+            send_to_all_inc(context, to_die + "'s spacesuit failed!")
+            send_to_all_inc(context, to_die + " has died!")
             to_die = ""
         state = 16
         travel(context)
@@ -400,7 +407,7 @@ def status(context):
         status_msg += ("We have " + str(oxygen) + " units of oxygen remaining \n")
         status_msg += ("We are " + str(course) + " percent on course")
 
-        send_to_all(context, status_msg)
+        send_to_all_inc(context, status_msg)
 
         if distance_from_home < 1:
             send_to_all(context, "You made it home!")
@@ -428,7 +435,7 @@ def win(context):
     global game_state
 
     if state == 18:
-        send_to_all(context, "Crewmates Win! \n The imposter(s) were: \n" + str(imposter_names))
+        send_to_all_inc(context, "Crewmates Win! \n The imposter(s) were: \n" + str(imposter_names))
         state = 0
         game_state = "not_running"
 
@@ -437,7 +444,7 @@ def lose(context):
     global state
     global game_state
     if state == 19:
-        send_to_all(context, "Game Over! The imposter(s) won! The imposter(s) were: \n" + str(imposter_names))
+        send_to_all_inc(context, "Game Over! The imposter(s) won! The imposter(s) were: \n" + str(imposter_names))
         state = 0
         game_state = "not_running"
 
