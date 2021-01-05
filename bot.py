@@ -463,7 +463,7 @@ def non_command(update, context):
     global to_die
     global oxygen
 
-    print("received message " + update.message.text)
+    print("received message " + update.message.text + " from " + update.message.from_user.first_name)
 
     if state == 1: # set amount of imposters
         while imposter_amount < 1 or imposter_amount >= (len(player_ids) / 2):
@@ -509,7 +509,6 @@ def non_command(update, context):
         if update.message.chat_id == spacesuit_maintainer:
             if update.message.text in living_player_names:
                 to_die = update.message.text
-                print(to_die)
                 state = 13
                 maintain_oxygen(context)
                 return
