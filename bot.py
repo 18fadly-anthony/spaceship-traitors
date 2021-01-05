@@ -10,19 +10,13 @@ import math
 #API_KEY = str(sys.argv[1])
 
 game_state = "not running"
-players = []
 host = ""
-living_players = []
 imposter_amount = 0
 state = 0
-imposters = []
-living_imposters = []
 captain = ""
 captain_id = ""
 votes = []
 voted = []
-living_player_id_list = []
-player_names = []
 choices = ["up", "down", "right", "left", "stay"]
 choice = ""
 course = 50
@@ -30,8 +24,6 @@ spacesuit_maintainer = ""
 oxygen_maintainer = ""
 to_die = ""
 oxygen = 50
-imposter_names = []
-dead_players = []
 distance_from_home = 50
 day = 0
 
@@ -41,6 +33,16 @@ asteroid_chance = 4 # 1 in 4
 heading_position = [random.randint(1,height), random.randint(1,length)]
 target_position = [random.randint(1,height), random.randint(1,length)]
 asteroid_positions = []
+
+player_names = []
+player_ids = []
+living_player_names = []
+living_player_ids = []
+dead_player_names = []
+
+imposter_names = []
+imposter_ids = []
+living_imposter_names = []
 
 
 def get_item_index(array, item):
@@ -90,13 +92,15 @@ def error(update, context):
 
 def startgame(update, context):
     global game_state
-    global players
     global host
+    global player_names
+    global player_ids
     if game_state == "not running":
         game_state = "lobby"
         host = update.message.from_user.first_name
         print(host + " is starting a game")
-        players.append([host, update.message.chat_id])
+        player_names.append(host)
+        player_ids.append(update.message.chat_id)
         update.message.reply_text('Starting a game... you are the host, ' + host)
         update.message.reply_text('Waiting for players...')
     else:
@@ -105,60 +109,55 @@ def startgame(update, context):
 
 def joingame(update, context):
     if game_state == "lobby":
-        new_player = [update.message.from_user.first_name, update.message.chat_id]
-        players.append(new_player)
+        new_player_name = update.message.from_user.first_name
+        new_player_id = update.message.chat_id
+        if new_player_name in player_names:
+            context.bot.send_message(new_player_id, "Error you, or someone with your first name on telegram, is already in the game")
+        player_names.append(new_player_name)
+        player_ids.append(new_player_id)
         update.message.reply_text('You have joined ' + host + "'s game")
-        context.bot.send_message(players[0][1], new_player[0] + " has joined your game")
-        print(new_player[0] + " has joined " + players[0][0] + "'s game")
-        if len(players) > 2:
-            context.bot.send_message(players[0][1], "There are " + str(len(players)) + " players in your lobby, send /begin to start the game")
+        context.bot.send_message(player_ids[0], new_player_name + " has joined your game")
+        print(new_player_name + " has joined " + player_names[0] + "'s game")
+        if len(player_names) > 2:
+            context.bot.send_message(player_ids[0], "There are " + str(len(player_names)) + " players in your lobby, send /begin to start the game")
 
 
 def send_to_all(context, message):
-    for i in players:
-        context.bot.send_message(i[1], message)
-
-def update_player_ids():
-    global living_player_id_list
-    global player_names
-    global living_imposters
-    global imposter_names
-    living_player_id_list = []
-    player_names = []
-    for i in range(len(living_players)):
-        living_player_id_list.append(living_players[i][1])
-        player_names.append(living_players[i][0])
-        if living_players[i][1] in imposters:
-            living_imposters.append(living_players[i][1])
-            imposter_names.append(living_players[i][0])
+    for i in player_ids:
+        context.bot.send_message(i, message)
 
 
 def setup_game(context):
     global state
-    global living_players
+    global living_player_names
+    global living_player_ids
+    global imposter_ids
+    global imposter_names
+    global living_imposter_names
     if state == 0:
-        living_players = players[:]
-        update_player_ids()
-        context.bot.send_message(players[0][1], "Set amount of imposters")
+        living_playe_names = player_names[:]
+        living_player_ids = player_ids[:]
+        context.bot.send_message(player_ids[0], "Set amount of imposters")
         state = 1 # to set amount of imposters
     elif state == 2: # set imposters
-        while not len(imposters) == imposter_amount:
-            new_imposter = random.choice(players)
-            if not new_imposter in imposters:
-                imposters.append(new_imposter)
-        living_imposters = imposters[:]
+        while not len(imposter_ids) == imposter_amount:
+            new_imposter_id = random.choice(player_ids)
+            if not new_imposter_id in imposter_ids:
+                imposter_ids.append(new_imposter_ids)
+                imposter_names.append(player_names[get_item_index(player_ids, new_imposter_id)])
+        living_imposter_names = imposter_names[:]
 
         # inform the imposters
-        for i in imposters:
-            context.bot.send_message(i[1], i[0] + " you are an imposter")
+        for i in imposter_ids:
+            context.bot.send_message(i, "You are an imposter")
 
         state = 3
         vote(context)
 
 
 def begin(update, context):
-    if not len(players) > 2:
-        context.bot.send_message(players[0][1], "Error: not enough players have joined")
+    if not len(player_ids) > 2:
+        context.bot.send_message(player_ids[0], "Error: not enough players have joined")
         return
     send_to_all(context, "Starting the Game!")
     setup_game(context)
@@ -175,7 +174,7 @@ def vote(context):
         voted = []
 
         send_to_all(context, "Vote for a captain who will steer the ship, enter one of the following:")
-        send_to_all(context, str(player_names))
+        send_to_all(context, str(living_player_names))
 
         state = 4
     if state == 5:
@@ -189,7 +188,7 @@ def steer(context):
     global course
     global captain_id
     send_to_all(context, "Captain " + captain + " will now steer the ship")
-    captain_id = living_player_id_list[get_item_index(player_names, captain)]
+    captain_id = player_ids[get_item_index(player_names, captain)]
     steering_minigame(context, False)
 
 
@@ -260,9 +259,8 @@ def steering_minigame(context, testing):
             context.bot.send_message(captain_id, message)
 
     if state == 6:
-        send_cap(context, "You will need to steer your ship '+' towards your target 'o' and avoid asteroids '*'")
-        send_cap(context, "Unless you're the imposter, then steer the the ship off course. But not too much or the crewmates will catch on")
-        send_cap(context, "If you can't see the target, the ship is already on top of it")
+        msg = "You will need to steer your ship '+' towards your target 'o' and avoid asteroids '*' \n \n Unless you're the imposter, then steer the the ship off course. But not too much or the crewmates will catch on \n If you can't see the target, the ship is already on top of it"
+        send_cap(context, msg)
         send_cap(context, "Here is the map:")
 
         asteroid_positions = generate_asteroids(height, length, asteroid_chance)
@@ -314,11 +312,11 @@ def assign_jobs(context):
         spacesuit_maintainer = ""
         oxygen_maintainer = ""
         while spacesuit_maintainer == "":
-            new = random.choice(living_player_id_list)
+            new = random.choice(living_player_ids)
             if new != captain_id:
                 spacesuit_maintainer = new
         while oxygen_maintainer == "":
-            new = random.choice(living_player_id_list)
+            new = random.choice(living_player_ids)
             if new != captain_id and new != spacesuit_maintainer:
                 oxygen_maintainer = new
         state = 10
@@ -345,18 +343,21 @@ def maintain_oxygen(context):
 def spacewalk(context):
     global state
     global to_die
-    global living_players
-    global dead_players
-    global living_imposters
+    global living_player_names
+    global living_player_ids
+    global dead_player_names
+    global living_imposter_names
 
     if state == 15:
-        send_to_all(context, "It's time for a spacewalk, everyone will don a spacesuit and venture outside the ship, except for the captain who will maintain the ship")
+        send_to_all(context, "It's time for a spacewalk, everyone will wear a spacesuit and venture outside the ship, except for the captain who will maintain the ship")
         if to_die == captain:
             to_die = ""
-        elif to_die in player_names:
-            del living_players[get_item_index(player_names, to_die)]
-            dead_players.append(to_die)
-            update_player_ids()
+        elif to_die in living_player_names:
+            del living_player_names[get_item_index(living_player_names, to_die)]
+            del living_player_ids[get_item_index(living_player_names, to_die)]
+            dead_player_names.append(to_die)
+            if to_die in living_imposter_names:
+                del living_imposter_names[get_item_index(living_imposter_names. to_die)]
             send_to_all(context, to_die + "'s spacesuit failed!")
             send_to_all(context, to_die + " has died!")
             to_die = ""
@@ -386,11 +387,11 @@ def status(context):
 
         status_msg += "--- STATUS REPORT --- \n\n"
         status_msg += ("It is day " + str(day))
-        status_msg += ("There are " + str(len(living_players)) + " astronauts on deck")
-        status_msg += (str(len(dead_players)) + " astronauts have died")
-        status_msg +=("There are " + str(len(imposters)) + " imposters on deck")
-        status_msg += ("We are " + str(distance_from_home) + " lightyears away from home")
-        status_msg += ("We have " + str(oxygen) + " units of oxygen remaining")
+        status_msg += ("There are " + str(len(living_player_ids)) + " astronauts on deck \n")
+        status_msg += (str(len(dead_player_ids)) + " astronauts have died \n")
+        status_msg +=("There are " + str(len(living_imposter_names)) + " imposters on deck \n")
+        status_msg += ("We are " + str(distance_from_home) + " lightyears away from home \n")
+        status_msg += ("We have " + str(oxygen) + " units of oxygen remaining \n")
         status_msg += ("We are " + str(course) + " percent on course")
 
         send_to_all(context, status_msg)
@@ -399,7 +400,7 @@ def status(context):
             send_to_all(context, "You made it home!")
             state = 18
             win(context)
-        elif len(living_imposters) < 1:
+        elif len(living_imposter_names) < 1:
             send_to_all(context, "All imposters have been killed!")
             state = 18
             win(context)
@@ -407,7 +408,7 @@ def status(context):
             send_to_all(context, "You are out of oxygen!")
             state = 19
             lose(context)
-        elif len(living_imposters) >= (len(living_players) / 2):
+        elif len(living_imposter_names) >= (len(living_player_ids) / 2):
             send_to_all(context, "Imposters outnumber crewmates!")
             state = 19
             lose()
@@ -421,7 +422,7 @@ def win(context):
     global game_state
 
     if state == 18:
-        send_to_all(context, "Crewmates Win! \n The imposter(s) were: \n" + str(imposters))
+        send_to_all(context, "Crewmates Win! \n The imposter(s) were: \n" + str(imposter_names))
         state = 0
         game_state = "not_running"
 
@@ -430,7 +431,7 @@ def lose(context):
     global state
     global game_state
     if state == 19:
-        send_to_all(context, "Game Over! The imposter(s) won! The imposter(s) were: \n" + str(imposters))
+        send_to_all(context, "Game Over! The imposter(s) won! The imposter(s) were: \n" + str(imposter_names))
         state = 0
         game_state = "not_running"
 
@@ -447,8 +448,8 @@ def non_command(update, context):
     print("received message " + update.message.text)
 
     if state == 1: # set amount of imposters
-        while imposter_amount < 1 or imposter_amount >= (len(players) / 2):
-            if update.message.chat_id == players[0][1]:
+        while imposter_amount < 1 or imposter_amount >= (len(player_ids) / 2):
+            if update.message.chat_id == player_ids[0]:
                 try:
                     imposter_amount = int(update.message.text)
                 except ValueError:
@@ -458,12 +459,12 @@ def non_command(update, context):
         return
 
     elif state == 4: # getting votes
-        if update.message.chat_id in living_player_id_list:
+        if update.message.chat_id in living_player_ids:
             if update.message.chat_id not in voted:
                 voted.append(update.message.chat_id)
-                if update.message.text in player_names:
+                if update.message.text in living_player_names:
                     votes.append(update.message.text)
-        if len(voted) == len(living_players):
+        if len(voted) == len(living_player_ids):
             state = 5
             vote(context)
             return
@@ -488,7 +489,7 @@ def non_command(update, context):
                 return
     elif state == 12:
         if update.message.chat_id == spacesuit_maintainer:
-            if update.message.text in player_names:
+            if update.message.text in living_player_names:
                 to_die = update.message.text
                 print(to_die)
                 state = 13
