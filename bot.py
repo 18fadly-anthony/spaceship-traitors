@@ -27,8 +27,8 @@ oxygen = 50
 distance_from_home = 50
 day = 0
 
-height = 3
-length = 5
+height = 5
+length = 10
 asteroid_chance = 4 # 1 in 4
 heading_position = [random.randint(1,height), random.randint(1,length)]
 target_position = [random.randint(1,height), random.randint(1,length)]
