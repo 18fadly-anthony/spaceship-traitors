@@ -26,6 +26,9 @@ player_names = []
 choices = ["up", "down", "right", "left", "stay"]
 choice = ""
 course = 50
+spacesuit_maintainer = ""
+oxygen_maintainer = ""
+to_die = ""
 
 height = 3
 length = 5
@@ -39,9 +42,6 @@ dead_players = []
 distance_from_home = 50
 oxygen = 100
 day = 0
-spacesuit_maintainer = ""
-oxygen_maintainer = ""
-to_die = ""
 
 
 def get_item_index(array, item):
@@ -299,7 +299,37 @@ def steering_minigame(context, testing):
             if course < 0:
                 course = 0
         send_to_all(context, "The ship has been steered")
+        state = 9
+        assign_jobs(context)
 
+
+def assign_jobs(context):
+    global spacesuit_maintainer
+    global oxygen_maintainer
+    global state
+
+    if state == 9:
+        spacesuit_maintainer = ""
+        oxygen_maintainer = ""
+        while spacesuit_maintainer == "":
+            new = random.choice(living_player_id_list)
+            if choice != captain_id:
+                spacesuit_maintainer = new
+        while oxygen_maintainer == "":
+            new = random.choice(living_player_id_list)
+            if choice != captain and choice != spacesuit_maintainer:
+                oxygen_maintainer = new
+        state = 10
+        maintain_spacesuits(context)
+
+
+def maintain_spacesuits(context):
+    global to_die
+    global state
+
+    if state == 10:
+        context.bot.send_message(spacesuit_maintainer,"You are the spacesuit maintainer, you may choose to maintain or sabotage the spacesuits. Type 'maintain' or 'sabotage'")
+        state = 11
 
 def non_command(update, context):
     global state
@@ -307,6 +337,7 @@ def non_command(update, context):
     global votes
     global voted
     global choice
+    global to_die
 
     print("received message " + update.message.text)
 
@@ -321,7 +352,7 @@ def non_command(update, context):
         setup_game(context)
         return
 
-    if state == 4: # getting votes
+    elif state == 4: # getting votes
         if update.message.chat_id in living_player_id_list:
             if update.message.chat_id not in voted:
                 voted.append(update.message.chat_id)
@@ -331,14 +362,33 @@ def non_command(update, context):
             state = 5
             vote(context)
             return
-    if state == 7:
+    elif state == 7:
         if update.message.chat_id == captain_id:
             if update.message.text.lower() in choices:
                 choice = update.message.text.lower()
                 state = 8
                 steering_minigame(context, False)
                 return
-
+    elif state == 11:
+        if update.message.chat_id == spacesuit_maintainer:
+            if update.message.text.lower() == "maintain":
+                context.bot.send_message(spacesuit_maintainer,"You have chosen to maintain the spacesuits")
+                state = 12
+                # TODO next function here
+                return
+            elif update.message.text.lower() == "sabotage":
+                context.bot.send_message(spacesuit_maintainer,"Enter the player whose suit you want to sabotage")
+                context.bot.send_message(spacesuit_maintainer, player_names)
+                state = 13
+                return
+    elif state == 13:
+        if update.message.chat_id == spacesuit_maintainer:
+            if update.message.text in player_names:
+                to_die = update.message.text
+                print(to_die)
+                state = 12
+                # TODO next function here
+                return
 
 
 def main():
