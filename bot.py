@@ -415,19 +415,19 @@ def status(context):
         send_to_all_inc(context, status_msg)
 
         if distance_from_home < 1:
-            send_to_all(context, "You made it home!")
+            send_to_all_inc(context, "You made it home!")
             state = 18
             win(context)
         elif len(living_imposter_names) < 1:
-            send_to_all(context, "All imposters have been killed!")
+            send_to_all_inc(context, "All imposters have been killed!")
             state = 18
             win(context)
         elif oxygen < 1:
-            send_to_all(context, "You are out of oxygen!")
+            send_to_all_inc(context, "You are out of oxygen!")
             state = 19
             lose(context)
         elif len(living_imposter_names) >= (len(living_player_ids) / 2):
-            send_to_all(context, "Imposters outnumber crewmates!")
+            send_to_all_inc(context, "Imposters outnumber crewmates!")
             state = 19
             lose(context)
         else:
