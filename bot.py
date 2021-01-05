@@ -6,8 +6,9 @@ import logging
 import sys
 import random
 import math
+import time
 
-#API_KEY = str(sys.argv[1])
+random.seed(time.time())
 
 game_state = "not running"
 host = ""
