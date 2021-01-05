@@ -295,11 +295,13 @@ def steering_minigame(context, testing):
         else:
             heading_position = new_position[:]
         send_cap(context, redraw(height, length, heading_position, target_position, asteroid_positions))
-        course += distance(heading_position, target_position)
+        if testing:
+            print(distance(heading_position, target_position))
+        course -= (distance(heading_position, target_position) - 5)
         if course > 100:
             course = 100
-            if course < 0:
-                course = 0
+        elif course < 0:
+            course = 0
         send_to_all(context, "The ship has been steered")
         state = 9
         assign_jobs(context)
@@ -355,8 +357,8 @@ def spacewalk(context):
         if to_die == captain:
             to_die = ""
         elif to_die in living_player_names:
-            del living_player_names[get_item_index(living_player_names, to_die)]
             del living_player_ids[get_item_index(living_player_names, to_die)]
+            del living_player_names[get_item_index(living_player_names, to_die)]
             dead_player_names.append(to_die)
             if to_die in living_imposter_names:
                 del living_imposter_names[get_item_index(living_imposter_names, to_die)]
@@ -388,7 +390,7 @@ def status(context):
         status_msg = ""
 
         status_msg += "--- STATUS REPORT --- \n\n"
-        status_msg += ("It is day " + str(day))
+        status_msg += ("It is day " + str(day) + " \n")
         status_msg += ("There are " + str(len(living_player_ids)) + " astronauts on deck \n")
         status_msg += (str(len(dead_player_names)) + " astronauts have died \n")
         status_msg +=("There are " + str(len(living_imposter_names)) + " imposters on deck \n")
@@ -413,7 +415,7 @@ def status(context):
         elif len(living_imposter_names) >= (len(living_player_ids) / 2):
             send_to_all(context, "Imposters outnumber crewmates!")
             state = 19
-            lose()
+            lose(context)
         else:
             state = 3
             vote(context)
