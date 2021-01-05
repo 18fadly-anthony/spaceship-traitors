@@ -116,6 +116,10 @@ def joingame(update, context):
         new_player_id = update.message.chat_id
         if new_player_name in player_names:
             context.bot.send_message(new_player_id, "Error you, or someone with your first name on telegram, is already in the game")
+            return
+        elif new_player_name == host:
+            context.bot.send_message(new_player_id, "Error you, or someone with your first name on telegram, is already in the game")
+            return
         player_names.append(new_player_name)
         player_ids.append(new_player_id)
         update.message.reply_text('You have joined ' + host + "'s game")
