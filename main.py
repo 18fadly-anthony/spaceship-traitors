@@ -366,7 +366,11 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        try:
+            main()
+        except EOFError:
+            print('\n' + "Exiting...")
+            sys.exit(0)
     except KeyboardInterrupt:
         print('\n' + "Exiting...")
         sys.exit(0)
