@@ -108,6 +108,8 @@ def startgame(update, context):
 
 
 def joingame(update, context):
+    global player_names
+    global player_ids
     if game_state == "lobby":
         new_player_name = update.message.from_user.first_name
         new_player_id = update.message.chat_id
@@ -135,7 +137,7 @@ def setup_game(context):
     global imposter_names
     global living_imposter_names
     if state == 0:
-        living_playe_names = player_names[:]
+        living_player_names = player_names[:]
         living_player_ids = player_ids[:]
         context.bot.send_message(player_ids[0], "Set amount of imposters")
         state = 1 # to set amount of imposters
@@ -143,7 +145,7 @@ def setup_game(context):
         while not len(imposter_ids) == imposter_amount:
             new_imposter_id = random.choice(player_ids)
             if not new_imposter_id in imposter_ids:
-                imposter_ids.append(new_imposter_ids)
+                imposter_ids.append(new_imposter_id)
                 imposter_names.append(player_names[get_item_index(player_ids, new_imposter_id)])
         living_imposter_names = imposter_names[:]
 
@@ -357,7 +359,7 @@ def spacewalk(context):
             del living_player_ids[get_item_index(living_player_names, to_die)]
             dead_player_names.append(to_die)
             if to_die in living_imposter_names:
-                del living_imposter_names[get_item_index(living_imposter_names. to_die)]
+                del living_imposter_names[get_item_index(living_imposter_names, to_die)]
             send_to_all(context, to_die + "'s spacesuit failed!")
             send_to_all(context, to_die + " has died!")
             to_die = ""
@@ -388,7 +390,7 @@ def status(context):
         status_msg += "--- STATUS REPORT --- \n\n"
         status_msg += ("It is day " + str(day))
         status_msg += ("There are " + str(len(living_player_ids)) + " astronauts on deck \n")
-        status_msg += (str(len(dead_player_ids)) + " astronauts have died \n")
+        status_msg += (str(len(dead_player_names)) + " astronauts have died \n")
         status_msg +=("There are " + str(len(living_imposter_names)) + " imposters on deck \n")
         status_msg += ("We are " + str(distance_from_home) + " lightyears away from home \n")
         status_msg += ("We have " + str(oxygen) + " units of oxygen remaining \n")
