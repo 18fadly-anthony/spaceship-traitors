@@ -149,7 +149,7 @@ def setup_game(context):
     if state == 0:
         living_player_names = player_names[:]
         living_player_ids = player_ids[:]
-        context.bot.send_message(player_ids[0], "Set amount of imposters")
+        context.bot.send_message(player_ids[0], "Set amount of imposters, it must be less than " + str(len(living_player_ids) / 2))
         state = 1 # to set amount of imposters
     elif state == 2: # set imposters
         while not len(imposter_ids) == imposter_amount:
