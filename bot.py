@@ -24,7 +24,7 @@ course = 50
 spacesuit_maintainer = ""
 oxygen_maintainer = ""
 to_die = ""
-oxygen = 50
+oxygen = 100
 distance_from_home = 50
 day = 0
 
