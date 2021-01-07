@@ -24,7 +24,7 @@ course = 50
 spacesuit_maintainer = ""
 oxygen_maintainer = ""
 to_die = ""
-oxygen = 100
+oxygen = 75
 distance_from_home = 50
 day = 0
 
@@ -391,7 +391,7 @@ def travel(context):
 
     if state == 16:
         distance_from_home -= (course / 10)
-        oxygen -= 10
+        oxygen -= random.randint(1,10)
         day += 1
         state = 17
         status(context)
