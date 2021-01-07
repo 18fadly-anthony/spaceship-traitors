@@ -195,7 +195,6 @@ def vote(context):
         state = 4
     if state == 5:
         captain = max(votes, key = votes.count)
-        send_to_all(context, "The captain is " + captain)
         state = 6
         steer(context)
 
@@ -203,7 +202,7 @@ def vote(context):
 def steer(context):
     global course
     global captain_id
-    send_to_all(context, "Captain " + captain + " will now steer the ship")
+    send_to_all(context, "The captain is steering the ship")
     captain_id = player_ids[get_item_index(player_names, captain)]
     steering_minigame(context, False)
 
@@ -346,6 +345,7 @@ def maintain_spacesuits(context):
     global state
 
     if state == 10:
+        send_to_all(context, "The spacesuit maintainer is maintaining spacesuits")
         context.bot.send_message(spacesuit_maintainer,"You are the spacesuit maintainer, you may choose to maintain the spacesuits or sabotage a specific spacesuit causing that player to die. Type 'maintain' or 'sabotage'")
         state = 11
 
@@ -354,6 +354,7 @@ def maintain_oxygen(context):
     global state
 
     if state == 13:
+        send_to_all(context, "The oxygen maintainer is maintaining oxygen")
         context.bot.send_message(oxygen_maintainer, "You are the oxygen maintainer, you man choose to maintain the oxygen or sabotage it by leaking it. Type 'maintain' or 'sabotage'")
         state = 14
 
@@ -370,6 +371,7 @@ def spacewalk(context):
         send_to_all(context, "It's time for a spacewalk, everyone will wear a spacesuit and venture outside the ship, except for the captain who will maintain the ship")
         if to_die == captain:
             to_die = ""
+            context.bot.send_message(captain_id, "An attempt has been made on your life!")
         elif to_die in living_player_names:
             del living_player_ids[get_item_index(living_player_names, to_die)]
             del living_player_names[get_item_index(living_player_names, to_die)]
