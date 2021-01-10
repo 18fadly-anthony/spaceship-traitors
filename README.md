@@ -25,8 +25,13 @@ environment.systemPackages = with pkgs; [
 ];
 ```
 
+```
+git clone --depth 1 https://github.com/18fadly-anthony/spaceship-traitors
+```
+
 ## Running
 
 ```
+$ cd spaceship-traitors
 $ ./bot.py 'API_KEY_HERE'
 ```
