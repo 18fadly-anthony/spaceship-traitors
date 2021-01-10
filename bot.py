@@ -101,6 +101,8 @@ def startgame(update, context):
     global player_names
     global player_ids
     if game_state == "not running":
+        player_ids = []
+        player_names = []
         game_state = "lobby"
         host = update.message.from_user.first_name
         print(host + " is starting a game")
