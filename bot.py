@@ -150,6 +150,12 @@ def reply_keyboard_to_all(context, message, menu_markup):
         context.bot.send_message(chat_id=i, text=message, reply_markup=menu_markup)
 
 
+def decide_maintain(player_id, context, message):
+    menu_keyboard = [['maintain'], ['sabotage']]
+    menu_markup = ReplyKeyboardMarkup(menu_keyboard, one_time_keyboard=True, resize_keyboard=True)
+    context.bot.send_message(chat_id=player_id, text=message, reply_markup=menu_markup)
+
+
 def setup_game(context):
     global state
     global living_player_names
@@ -302,7 +308,11 @@ def steering_minigame(context, testing):
         asteroid_positions = generate_asteroids(height, length, asteroid_chance)
         map = redraw(height, length, heading_position, target_position, asteroid_positions)
         send_cap(context, map)
-        send_cap(context, "Send 'up', 'down', 'left', 'right', or 'stay' to steer the ship")
+
+        menu_keyboard = [['up'], ['down'], ['left'], ['right'], ['stay']]
+        menu_markup = ReplyKeyboardMarkup(menu_keyboard, one_time_keyboard=True, resize_keyboard=True)
+        context.bot.send_message(chat_id=captain_id, text="Steer the ship " + str(max_imposters), reply_markup=menu_markup)
+
         if testing:
             choice = input()
             state =  8
@@ -367,7 +377,7 @@ def maintain_spacesuits(context):
 
     if state == 10:
         send_to_all(context, "The spacesuit maintainer is maintaining spacesuits")
-        context.bot.send_message(spacesuit_maintainer,"You are the spacesuit maintainer, you may choose to maintain the spacesuits or sabotage a specific spacesuit causing that player to die. Type 'maintain' or 'sabotage'")
+        decide_maintain(spacesuit_maintainer, context, "You are the spacesuit maintainer, you may choose to maintain the spacesuits or sabotage a specific spacesuit causing that player to die.")
         state = 11
 
 
@@ -376,7 +386,7 @@ def maintain_oxygen(context):
 
     if state == 13:
         send_to_all(context, "The oxygen maintainer is maintaining oxygen")
-        context.bot.send_message(oxygen_maintainer, "You are the oxygen maintainer, you man choose to maintain the oxygen or sabotage it by leaking it. Type 'maintain' or 'sabotage'")
+        decide_maintain(oxygen_maintainer, context, "You are the oxygen maintainer, you man choose to maintain the oxygen or sabotage it by leaking it.")
         state = 14
 
 
@@ -524,8 +534,11 @@ def non_command(update, context):
                 maintain_oxygen(context)
                 return
             elif update.message.text.lower() == "sabotage":
-                context.bot.send_message(spacesuit_maintainer,"Enter the player whose suit you want to sabotage")
-                context.bot.send_message(spacesuit_maintainer, living_player_names)
+                menu_keyboard = []
+                for i in living_player_names:
+                    menu_keyboard.append([i])
+                menu_markup = ReplyKeyboardMarkup(menu_keyboard, one_time_keyboard=True, resize_keyboard=True)
+                context.bot.send_message(chat_id=spacesuite_maintainer, text = "Enter the player whose suit you want to sabotage", reply_markup = menu_markup)
                 state = 12
                 return
     elif state == 12:
