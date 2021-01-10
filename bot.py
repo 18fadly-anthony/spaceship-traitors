@@ -155,7 +155,13 @@ def setup_game(context):
     if state == 0:
         living_player_names = player_names[:]
         living_player_ids = player_ids[:]
-        context.bot.send_message(player_ids[0], "Set amount of imposters, it must be less than " + str(len(living_player_ids) / 2))
+        max_imposters = math.ceil(len(living_player_ids) / 2)
+        menu_keyboard = []
+        for i in range(1, max_imposters):
+            menu_keyboard.append([str(i)])
+        menu_markup = ReplyKeyboardMarkup(menu_keyboard, one_time_keyboard=True, resize_keyboard=True)
+        #context.bot.send_message(player_ids[0], "Set amount of imposters, it must be less than " + str(max_imposters))
+        context.bot.send_message(chat_id=player_ids[0], text="Set amount of imposters, it must be less than " + str(max_imposters), reply_markup=menu_markup)
         state = 1 # to set amount of imposters
     elif state == 2: # set imposters
         while not len(imposter_ids) == imposter_amount:
