@@ -444,7 +444,7 @@ def win(context):
     if state == 18:
         send_to_all_inc(context, "Crewmates Win! \n The imposter(s) were: \n" + str(imposter_names))
         state = 0
-        game_state = "not_running"
+        game_state = "not running"
 
 
 def lose(context):
@@ -453,7 +453,7 @@ def lose(context):
     if state == 19:
         send_to_all_inc(context, "Game Over! The imposter(s) won! The imposter(s) were: \n" + str(imposter_names))
         state = 0
-        game_state = "not_running"
+        game_state = "not running"
 
 
 def non_command(update, context):
