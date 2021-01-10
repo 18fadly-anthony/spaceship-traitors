@@ -145,6 +145,11 @@ def send_to_all_inc(context, message):
         context.bot.send_message(i, message)
 
 
+def reply_keyboard_to_all(context, message, menu_markup):
+    for i in living_player_ids:
+        context.bot.send_message(chat_id=i, text=message, reply_markup=menu_markup)
+
+
 def setup_game(context):
     global state
     global living_player_names
@@ -160,7 +165,6 @@ def setup_game(context):
         for i in range(1, max_imposters):
             menu_keyboard.append([str(i)])
         menu_markup = ReplyKeyboardMarkup(menu_keyboard, one_time_keyboard=True, resize_keyboard=True)
-        #context.bot.send_message(player_ids[0], "Set amount of imposters, it must be less than " + str(max_imposters))
         context.bot.send_message(chat_id=player_ids[0], text="Set amount of imposters, it must be less than " + str(max_imposters), reply_markup=menu_markup)
         state = 1 # to set amount of imposters
     elif state == 2: # set imposters
@@ -199,10 +203,15 @@ def vote(context):
         votes = []
         voted = []
 
-        send_to_all(context, "Vote for a captain who will steer the ship, enter one of the following:")
         randomized_players = living_player_names[:]
         random.shuffle(randomized_players)
-        send_to_all(context, str(randomized_players))
+
+        menu_keyboard = []
+        for i in randomized_players:
+            menu_keyboard.append([i])
+        menu_markup = ReplyKeyboardMarkup(menu_keyboard, one_time_keyboard=True, resize_keyboard=True)
+
+        reply_keyboard_to_all(context, "Vote for a captain who will steer the ship, enter one of the following:", menu_markup)
 
         state = 4
     if state == 5:
