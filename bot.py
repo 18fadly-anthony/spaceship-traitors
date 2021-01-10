@@ -91,6 +91,10 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 
+def source(update, context):
+    update.message.reply_text("https://github.com/18fadly-anthony/spaceship-traitors")
+
+
 def startgame(update, context):
     global game_state
     global host
@@ -534,6 +538,7 @@ def main():
     dp.add_handler(CommandHandler("joingame", joingame))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("begin", begin))
+    dp.add_handler(CommandHandler("source", source))
     dp.add_handler(MessageHandler(Filters.text, non_command))
     dp.add_error_handler(error)
     updater.start_polling()
