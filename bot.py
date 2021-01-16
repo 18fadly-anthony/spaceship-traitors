@@ -27,6 +27,7 @@ to_die = ""
 oxygen = 75
 distance_from_home = 50
 day = 0
+max_imposters = 0
 
 height = 5
 length = 10
@@ -163,6 +164,7 @@ def setup_game(context):
     global imposter_ids
     global imposter_names
     global living_imposter_names
+    global max_imposters
     if state == 0:
         living_player_names = player_names[:]
         living_player_ids = player_ids[:]
