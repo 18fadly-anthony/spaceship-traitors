@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+# Copyright (c) 2021 Anthony Fadly (18fadly.anthony@gmail.com)
+# This program is licensed under the GNU Affero General Public License
+# You are free to copy, modify, and redistribute the code.
+# See LICENSE file and COPYING file.
+
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import ReplyKeyboardMarkup
 import logging
