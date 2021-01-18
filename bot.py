@@ -98,7 +98,7 @@ def error(update, context):
 
 
 def source(update, context):
-    update.message.reply_text("https://github.com/18fadly-anthony/spaceship-traitors")
+    update.message.reply_text(str(sys.argv[2]))
 
 
 def startgame(update, context):
