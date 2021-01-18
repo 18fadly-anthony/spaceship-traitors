@@ -6,7 +6,7 @@ stdenv.mkDerivation {
     # System requirements.
     readline
 
-    # Python requirements (enough to get a virtualenv going).
+    # Python requirements
     python3Full
     python3Packages.python-telegram-bot
   ];
