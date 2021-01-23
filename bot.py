@@ -545,7 +545,7 @@ def non_command(update, context):
                 for i in living_player_names:
                     menu_keyboard.append([i])
                 menu_markup = ReplyKeyboardMarkup(menu_keyboard, one_time_keyboard=True, resize_keyboard=True)
-                context.bot.send_message(chat_id=spacesuite_maintainer, text = "Enter the player whose suit you want to sabotage", reply_markup = menu_markup)
+                context.bot.send_message(chat_id=spacesuit_maintainer, text = "Enter the player whose suit you want to sabotage", reply_markup = menu_markup)
                 state = 12
                 return
     elif state == 12:
