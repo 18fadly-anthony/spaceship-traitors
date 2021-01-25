@@ -98,7 +98,11 @@ def error(update, context):
 
 
 def source(update, context):
-    update.message.reply_text(str(sys.argv[2]))
+    if len(sys.argv) > 2:
+        message = str(sys.argv[2])
+    else:
+        message = "Whoever is hosting the bot did not provide a link to the source code and is in violation of the AGPL, please complain about this to them"
+    update.message.reply_text(message)
 
 
 def startgame(update, context):
